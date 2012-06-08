@@ -1,13 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <math.h>
 #include <limits.h>
 
-#define SIGMOID_P	0.5
-#define LEARNING_RATE	1.0
+#define SIGMOID_P	0.1
+#define LEARNING_RATE	0.5
 
 #define NUM_IN	2
-#define NUM_MID	10
+#define NUM_MID	50
 #define NUM_OUT	1
 
 float vin[NUM_IN];
@@ -30,13 +31,15 @@ static void init(void)
 {
 	int i;
 	float *ptr;
+
+	srand(time(NULL));
 	
 	for(i = 0, ptr = (float *)&wmid[0]; i < NUM_IN * NUM_MID; i++) {
-		*ptr++ = ((float)rand())/UINT_MAX;
+		*ptr++ = ((float)rand())/UINT_MAX - 0.5;
 	}
 
 	for(i = 0, ptr = (float *)&wout[0]; i < NUM_MID * NUM_OUT; i++) {
-		*ptr++ = ((float)rand())/UINT_MAX;
+		*ptr++ = ((float)rand())/UINT_MAX - 0.5;
 	}
 }
 
@@ -109,6 +112,26 @@ static void update_weights(void)
 	}
 }
 
+static float calc(float v0, float v1)
+{
+	vin[1] = v1;
+	vin[0] = v0;
+	update_values();
+
+	return vout[0];
+}
+
+static void dump(void)
+{
+	float v00 = calc(0,0),
+	      v10 = calc(0,1),
+	      v01 = calc(1,0),
+	      v11 = calc(1,1);
+
+	printf("(0,0) %f, (1,0) %f, (0,1) %f (1,1) %f\n",
+			v00, v10, v01, v11);
+}
+
 int main(int argc, const char *argv[])
 {
 	init();
@@ -117,27 +140,7 @@ int main(int argc, const char *argv[])
 		update_values();
 		update_error();
 		update_weights();
+		dump();
 	}
-
-	vin[1] = 0;
-	vin[0] = 0;
-	update_values();
-	printf("(0,0) %f\n", vout[0]);
-
-	vin[1] = 0;
-	vin[0] = 1;
-	update_values();
-	printf("(0,1) %f\n", vout[0]);
-
-	vin[1] = 1;
-	vin[0] = 0;
-	update_values();
-	printf("(1,0) %f\n", vout[0]);
-
-	vin[1] = 1;
-	vin[0] = 1;
-	update_values();
-	printf("(1,1) %f\n", vout[0]);
-
 	return 0;
 }
