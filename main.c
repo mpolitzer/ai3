@@ -4,11 +4,10 @@
 #include <math.h>
 #include <limits.h>
 
-#define SIGMOID_P	0.1
-#define LEARNING_RATE	0.5
+#define LEARNING_RATE	0.2
 
 #define NUM_IN	2
-#define NUM_MID	50
+#define NUM_MID	3
 #define NUM_OUT	1
 
 float vin[NUM_IN];
@@ -19,12 +18,14 @@ float expected[NUM_OUT];
 float emid[NUM_MID];
 float eout[NUM_OUT];
 
+float mid_offset[NUM_MID];
+float out_offset[NUM_OUT];
 float wmid[NUM_IN][NUM_MID];
 float wout[NUM_MID][NUM_OUT];
 
 static float sigmoid(float h)
 {
-	return 1.0/(1.0 + exp(-h/SIGMOID_P));
+	return 1.0/(1.0 + exp(-h));
 }
 
 static void init(void)
@@ -50,7 +51,7 @@ static void update_values(void)
 	for(j = 0; j < NUM_MID; j++) {
 		int i;
 
-		for(i = 0, vmid[j] = 0; i < NUM_IN; i++) {
+		for(i = 0, vmid[j] = mid_offset[j]; i < NUM_IN; i++) {
 			vmid[j] += vin[i] * wmid[i][j];
 		}
 		vmid[j] = sigmoid(vmid[j]);
@@ -59,7 +60,7 @@ static void update_values(void)
 	for(j = 0; j < NUM_OUT; j++) {
 		int i;
 
-		for(i = 0, vout[j] = 0; i < NUM_MID; i++) {
+		for(i = 0, vout[j] = out_offset[j]; i < NUM_MID; i++) {
 			vout[j] += vmid[i] * wout[i][j];
 		}
 		vout[j] = sigmoid(vout[j]);
@@ -98,6 +99,7 @@ static void update_weights(void)
 			wout[j][i] += LEARNING_RATE
 				* eout[i]
 				* vmid[j];
+			out_offset[i] += LEARNING_RATE * eout[i];
 		}
 	}
 
@@ -108,6 +110,7 @@ static void update_weights(void)
 			wmid[j][i] += LEARNING_RATE
 				* emid[i]
 				* vin[j];
+			mid_offset[i] += LEARNING_RATE * emid[i];
 		}
 	}
 }
@@ -119,6 +122,28 @@ static float calc(float v0, float v1)
 	update_values();
 
 	return vout[0];
+}
+
+static void dump_net(void)
+{
+	int i;
+
+	printf("\n");
+	for(i = 0; i < NUM_IN; i++) {
+		int j;
+
+		for(j = 0; j < NUM_MID; j++) {
+			printf("%f, ", wmid[i][j]);
+		}
+		printf("\n");
+	}
+	printf("---------------\n");
+	for(i = 0; i < NUM_OUT; i++)
+		printf("%f ", out_offset[i]);
+	printf("\n");
+	for(i = 0; i < NUM_MID; i++)
+		printf("%f ", mid_offset[i]);
+	printf("\n");
 }
 
 static void dump(void)
@@ -142,5 +167,6 @@ int main(int argc, const char *argv[])
 		update_weights();
 		dump();
 	}
+	dump_net();
 	return 0;
 }
