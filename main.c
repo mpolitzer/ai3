@@ -5,11 +5,11 @@
 #include <limits.h>
 #include <stdarg.h>
 
-#define ITERATIONS 2000000
-#define LEARNING_RATE	0.2
+#define ITERATIONS 1000000
+#define LEARNING_RATE	0.5
 
 #define NUM_IN	2
-#define NUM_MID	3
+#define NUM_MID	2
 #define NUM_OUT	1
 
 float vin[NUM_IN];
@@ -79,17 +79,14 @@ static void update_error(void)
 			* (expected[j] - vout[j]);
 	}
 
-	for(i = 0; i < NUM_IN; i++) {
+	for(i = 0; i < NUM_MID; i++) {
 		int j;
 
-		for(j = 0, emid[i] = 0; j < NUM_MID; j++) {
-			int k;
+		for(j = 0, emid[i] = 0; j < NUM_OUT; j++) {
 
-			for(k = 0; k < NUM_OUT; k++) {
-				emid[i] += vmid[i]
-					* (1.0 - vmid[i])
-					* (wmid[i][j] * eout[k]);
-			}
+			emid[i] += vmid[i]
+				* (1.0 - vmid[i])
+				* (wout[i][j] * eout[j]);
 		}
 	}
 }
