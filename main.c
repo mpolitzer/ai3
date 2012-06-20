@@ -4,7 +4,7 @@
 #include <math.h>
 #include <limits.h>
 
-#define LEARNING_RATE	0.2
+#define LEARNING_RATE	0.5
 
 #define NUM_IN	2
 #define NUM_MID	3
@@ -137,12 +137,20 @@ static void dump_net(void)
 		}
 		printf("\n");
 	}
+	for(i = 0; i < NUM_MID; i++) {
+		int j;
+
+		for(j = 0; j < NUM_OUT; j++) {
+			printf("%f, ", wout[i][j]);
+		}
+		printf("\n");
+	}
 	printf("---------------\n");
-	for(i = 0; i < NUM_OUT; i++)
-		printf("%f ", out_offset[i]);
-	printf("\n");
 	for(i = 0; i < NUM_MID; i++)
 		printf("%f ", mid_offset[i]);
+	printf("\n");
+	for(i = 0; i < NUM_OUT; i++)
+		printf("%f ", out_offset[i]);
 	printf("\n");
 }
 
@@ -157,16 +165,32 @@ static void dump(void)
 			v00, v10, v01, v11);
 }
 
+int gen_data(float *v1, float *v2, float *e)
+{
+	static long long c = 0;
+
+	if(c == 4000000) return 0;
+
+	c++;
+	*v1 = rand() % 2;
+	*v2 = rand() % 2;
+	*e = ((int)*v1) ^ ((int)*v2);
+
+	return 3;
+}
+
 int main(int argc, const char *argv[])
 {
 	init();
 
-	while (scanf(" %f %f %f", &vin[0], &vin[1], &expected[0]) == 3) {
+	//while (scanf(" %f %f %f", &vin[0], &vin[1], &expected[0]) == 3) {
+	while (gen_data(&vin[0], &vin[1], &expected[0]) == 3) {
 		update_values();
 		update_error();
 		update_weights();
-		dump();
+		//dump();
 	}
+	dump();
 	dump_net();
 	return 0;
 }
