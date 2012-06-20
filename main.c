@@ -3,8 +3,10 @@
 #include <time.h>
 #include <math.h>
 #include <limits.h>
+#include <stdarg.h>
 
-#define LEARNING_RATE	0.5
+#define ITERATIONS 2000000
+#define LEARNING_RATE	0.2
 
 #define NUM_IN	2
 #define NUM_MID	3
@@ -81,9 +83,13 @@ static void update_error(void)
 		int j;
 
 		for(j = 0, emid[i] = 0; j < NUM_MID; j++) {
-			emid[i] += vmid[i]
-				* (1.0 - vmid[i])
-				* (wmid[i][j] * eout[j]);
+			int k;
+
+			for(k = 0; k < NUM_OUT; k++) {
+				emid[i] += vmid[i]
+					* (1.0 - vmid[i])
+					* (wmid[i][j] * eout[k]);
+			}
 		}
 	}
 }
@@ -115,20 +121,13 @@ static void update_weights(void)
 	}
 }
 
-static float calc(float v0, float v1)
-{
-	vin[1] = v1;
-	vin[0] = v0;
-	update_values();
-
-	return vout[0];
-}
-
 static void dump_net(void)
 {
 	int i;
 
-	printf("\n");
+	printf("---------------\n");
+	printf("network:\n");
+	printf("---------------\n");
 	for(i = 0; i < NUM_IN; i++) {
 		int j;
 
@@ -145,7 +144,6 @@ static void dump_net(void)
 		}
 		printf("\n");
 	}
-	printf("---------------\n");
 	for(i = 0; i < NUM_MID; i++)
 		printf("%f ", mid_offset[i]);
 	printf("\n");
@@ -154,43 +152,69 @@ static void dump_net(void)
 	printf("\n");
 }
 
-static void dump(void)
+void cputf(float f, int bg)
 {
-	float v00 = calc(0,0),
-	      v10 = calc(0,1),
-	      v01 = calc(1,0),
-	      v11 = calc(1,1);
-
-	printf("(0,0) %f, (1,0) %f, (0,1) %f (1,1) %f\n",
-			v00, v10, v01, v11);
+	printf("\033[%dm%f\033[0m ", bg, f);
 }
 
-int gen_data(float *v1, float *v2, float *e)
+static void dump(void)
 {
-	static long long c = 0;
+	int i;
 
-	if(c == 4000000) return 0;
+	for (i = 0; i < NUM_IN; i++) {
+		cputf(vin[i], vin[i] > 0.5 ? 42 : 41);
+	}
+	printf(" : ");
 
-	c++;
-	*v1 = rand() % 2;
-	*v2 = rand() % 2;
-	*e = ((int)*v1) ^ ((int)*v2);
+	for (i = 0; i < NUM_OUT; i++) {
+		cputf(vout[i], vout[i] > 0.5 ? 42 : 41);
+	}
+	printf("\n");
+}
 
-	return 3;
+void gen_expected_not(void)
+{
+	unsigned int v1 = vin[0];
+	expected[0] = (~v1) & 1;
+}
+
+void gen_expected_xor(void)
+{
+	unsigned int v1 = vin[0], v2 = vin[1];
+	expected[0] = (v1&1) ^ (v2&1);
 }
 
 int main(int argc, const char *argv[])
 {
+	int i, n;
+
+	if (argc > 1) sscanf(argv[1], " %d", &n);
+	else n = ITERATIONS;
+
 	init();
 
-	//while (scanf(" %f %f %f", &vin[0], &vin[1], &expected[0]) == 3) {
-	while (gen_data(&vin[0], &vin[1], &expected[0]) == 3) {
+	do {
+		vin[0] = (n & 1) ? 1 : 0;
+		vin[1] = (n & 2) ? 1 : 0;
+		gen_expected_xor();
+
 		update_values();
 		update_error();
 		update_weights();
-		//dump();
-	}
-	dump();
+	} while (n--);
+
 	dump_net();
+
+	printf("---------------\n");
+	printf("dump:\n");
+	printf("---------------\n");
+
+	for (i=0; i<4; i++) {
+		vin[0] = (i & 1) ? 1 : 0;
+		vin[1] = (i & 2) ? 1 : 0;
+		update_values();
+		dump();
+	}
+
 	return 0;
 }
