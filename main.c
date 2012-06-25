@@ -15,20 +15,20 @@
 #define NUM_MID	20
 #define NUM_OUT	1
 
-float vin[NUM_IN];
-float vmid[NUM_MID];
-float vout[NUM_OUT];
-float expected[NUM_OUT];
+long double vin[NUM_IN];
+long double vmid[NUM_MID];
+long double vout[NUM_OUT];
+long double expected[NUM_OUT];
 
-float emid[NUM_MID];
-float eout[NUM_OUT];
+long double emid[NUM_MID];
+long double eout[NUM_OUT];
 
-float mid_offset[NUM_MID];
-float out_offset[NUM_OUT];
-float wmid[NUM_IN][NUM_MID];
-float wout[NUM_MID][NUM_OUT];
+long double mid_offset[NUM_MID];
+long double out_offset[NUM_OUT];
+long double wmid[NUM_IN][NUM_MID];
+long double wout[NUM_MID][NUM_OUT];
 
-static float sigmoid(float h)
+static long double sigmoid(long double h)
 {
 	return 1.0/(1.0 + exp(-h));
 }
@@ -36,16 +36,16 @@ static float sigmoid(float h)
 static void init(void)
 {
 	int i;
-	float *ptr;
+	long double *ptr;
 
 	srand(time(NULL));
 	
-	for(i = 0, ptr = (float *)&wmid[0]; i < NUM_IN * NUM_MID; i++) {
-		*ptr++ = ((float)rand())/UINT_MAX - 0.5;
+	for(i = 0, ptr = (long double *)&wmid[0]; i < NUM_IN * NUM_MID; i++) {
+		*ptr++ = ((long double)rand())/UINT_MAX - 0.5;
 	}
 
-	for(i = 0, ptr = (float *)&wout[0]; i < NUM_MID * NUM_OUT; i++) {
-		*ptr++ = ((float)rand())/UINT_MAX - 0.5;
+	for(i = 0, ptr = (long double *)&wout[0]; i < NUM_MID * NUM_OUT; i++) {
+		*ptr++ = ((long double)rand())/UINT_MAX - 0.5;
 	}
 }
 
@@ -132,7 +132,7 @@ static void dump_net(void)
 		int j;
 
 		for(j = 0; j < NUM_MID; j++) {
-			printf("%f, ", wmid[i][j]);
+			printf("%Lf, ", wmid[i][j]);
 		}
 		printf("\n");
 	}
@@ -140,21 +140,21 @@ static void dump_net(void)
 		int j;
 
 		for(j = 0; j < NUM_OUT; j++) {
-			printf("%f, ", wout[i][j]);
+			printf("%Lf, ", wout[i][j]);
 		}
 		printf("\n");
 	}
 	for(i = 0; i < NUM_MID; i++)
-		printf("%f ", mid_offset[i]);
+		printf("%Lf ", mid_offset[i]);
 	printf("\n");
 	for(i = 0; i < NUM_OUT; i++)
-		printf("%f ", out_offset[i]);
+		printf("%Lf ", out_offset[i]);
 	printf("\n");
 }
 
-void cputf(float f, int bg)
+void cputf(long double f, int bg)
 {
-	printf("\033[%dm%f\033[0m ", bg, f);
+	printf("\033[%dm%LE\033[0m ", bg, f);
 }
 
 static void dump(void)
@@ -198,7 +198,7 @@ int main(int argc, const char *argv[])
 	int elapsed;
 	int interval = PRINT_INTERVAL;
 
-	float age, gender, number_of_tweets, result_past_time, category, result;
+	long double age, gender, number_of_tweets, result_past_time, category, result;
 
 	if (argc < 2) {
 		fprintf(stderr, "Need filename as parameter\n");
@@ -214,7 +214,7 @@ int main(int argc, const char *argv[])
 
 	train_set = 0.8*lines_in_fin;
 	while (train_set > iteration) {
-		int ret = fscanf(fin, " %f %f %f %f %f %f",
+		int ret = fscanf(fin, " %LE %LE %LE %LE %LE %LE",
 					&age, &gender, &number_of_tweets,
 					&result_past_time, &category, &result);
 		if (ret != 6) break;
@@ -245,14 +245,14 @@ int main(int argc, const char *argv[])
 	iteration = 0;
 
 	while (iteration < test_set) {
-		int ret = fscanf(fin, " %f %f %f %f %f %f",
+		int ret = fscanf(fin, " %LE %LE %LE %LE %LE %LE",
 					&age, &gender, &number_of_tweets,
 					&result_past_time, &category, &result);
 		if (ret != 6) break;
 		vin[0] = age;
 		vin[1] = gender;
 		vin[2] = number_of_tweets;
-		vin[3] = result_past_time;
+		vin[2] = result_past_time;
 		vin[4] = category;
 
 		iteration++;
@@ -269,9 +269,9 @@ int main(int argc, const char *argv[])
 		else wrong++;
 	}
 
-	printf("correct: %f wrong: %f, total: %ld\n",
-			((float)correct)/test_set,
-			((float)wrong)/test_set,
+	printf("correct: %Lf wrong: %Lf, total: %ld\n",
+			((long double)correct)/test_set,
+			((long double)wrong)/test_set,
 			test_set);
 #if 0
 	printf("---------------\n");
