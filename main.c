@@ -9,10 +9,10 @@
 #define PRINT_INTERVAL 5
 
 #define ITERATIONS 1000000
-#define LEARNING_RATE	0.5
+#define LEARNING_RATE	0.8
 
 #define NUM_IN	5
-#define NUM_MID	6
+#define NUM_MID	20
 #define NUM_OUT	1
 
 float vin[NUM_IN];
@@ -186,9 +186,11 @@ void gen_expected_xor(void)
 
 int main(int argc, const char *argv[])
 {
-	long long lines_in_fin;
-	long long iteration = 0;
-	long long correct = 0, wrong = 0;
+	long train_set;
+	long test_set;
+	long lines_in_fin;
+	long iteration = 0;
+	long correct = 0, wrong = 0;
 
 	FILE *fin;
 
@@ -208,9 +210,10 @@ int main(int argc, const char *argv[])
 
 	now = clock();
 
-	if (fscanf(fin, " %Ld", &lines_in_fin) != 1) return 1;
+	if (fscanf(fin, " %ld", &lines_in_fin) != 1) return 1;
 
-	while ((2*lines_in_fin)/3 > iteration) {
+	train_set = 0.8*lines_in_fin;
+	while (train_set > iteration) {
 		int ret = fscanf(fin, " %f %f %f %f %f %f",
 					&age, &gender, &number_of_tweets,
 					&result_past_time, &category, &result);
@@ -226,7 +229,7 @@ int main(int argc, const char *argv[])
 		elapsed = (clock()-now)/CLOCKS_PER_SEC;
 		if (elapsed >= interval) {
 			interval += PRINT_INTERVAL;
-			printf("iteration number: %Ld\n", iteration);
+			printf("iteration number: %ld\n", iteration);
 			dump_net();
 		}
 
@@ -235,10 +238,13 @@ int main(int argc, const char *argv[])
 		update_weights();
 	}
 
-	printf("iteration number: %Ld\n", iteration);
+	printf("iteration number: %ld\n", iteration);
 	dump_net();
 
-	while (lines_in_fin > iteration) {
+	test_set = lines_in_fin - iteration;
+	iteration = 0;
+
+	while (iteration < test_set) {
 		int ret = fscanf(fin, " %f %f %f %f %f %f",
 					&age, &gender, &number_of_tweets,
 					&result_past_time, &category, &result);
@@ -253,7 +259,7 @@ int main(int argc, const char *argv[])
 		elapsed = (clock()-now)/CLOCKS_PER_SEC;
 		if (elapsed >= interval) {
 			interval += PRINT_INTERVAL;
-			printf("iteration number: %Ld\n", iteration);
+			printf("iteration number: %ld\n", iteration);
 		}
 		update_values();
 		if (vout[0] > 0.5) vout[0] = 1;
@@ -263,10 +269,10 @@ int main(int argc, const char *argv[])
 		else wrong++;
 	}
 
-	printf("correct: %f wrong: %f, total: %Ld\n",
-			((float)correct)/(lines_in_fin/3),
-			((float)wrong)/(lines_in_fin/3),
-			lines_in_fin);
+	printf("correct: %f wrong: %f, total: %ld\n",
+			((float)correct)/test_set,
+			((float)wrong)/test_set,
+			test_set);
 #if 0
 	printf("---------------\n");
 	printf("dump:\n");
