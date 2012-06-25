@@ -186,11 +186,15 @@ void gen_expected_xor(void)
 
 int main(int argc, const char *argv[])
 {
-	static long long iteration;
+	long long lines_in_fin;
+	long long iteration = 0;
+	long long correct = 0, wrong = 0;
+
 	FILE *fin;
+
 	clock_t now;
 	int elapsed;
-	int interval;
+	int interval = PRINT_INTERVAL;
 
 	float age, gender, number_of_tweets, result_past_time, category, result;
 
@@ -204,7 +208,9 @@ int main(int argc, const char *argv[])
 
 	now = clock();
 
-	do {
+	if (fscanf(fin, " %Ld", &lines_in_fin) != 1) return 1;
+
+	while ((2*lines_in_fin)/3 > iteration) {
 		int ret = fscanf(fin, " %f %f %f %f %f %f",
 					&age, &gender, &number_of_tweets,
 					&result_past_time, &category, &result);
@@ -227,11 +233,41 @@ int main(int argc, const char *argv[])
 		update_values();
 		update_error();
 		update_weights();
-	} while (1);
+	}
 
-#if 0
+	printf("iteration number: %Ld\n", iteration);
 	dump_net();
 
+	while (lines_in_fin > iteration) {
+		int ret = fscanf(fin, " %f %f %f %f %f %f",
+					&age, &gender, &number_of_tweets,
+					&result_past_time, &category, &result);
+		if (ret != 6) break;
+		vin[0] = age;
+		vin[1] = gender;
+		vin[2] = number_of_tweets;
+		vin[3] = result_past_time;
+		vin[4] = category;
+
+		iteration++;
+		elapsed = (clock()-now)/CLOCKS_PER_SEC;
+		if (elapsed >= interval) {
+			interval += PRINT_INTERVAL;
+			printf("iteration number: %Ld\n", iteration);
+		}
+		update_values();
+		if (vout[0] > 0.5) vout[0] = 1;
+		else vout[0] = 0;
+
+		if (vout[0] == result) correct++;
+		else wrong++;
+	}
+
+	printf("correct: %f wrong: %f, total: %Ld\n",
+			((float)correct)/(lines_in_fin/3),
+			((float)wrong)/(lines_in_fin/3),
+			lines_in_fin);
+#if 0
 	printf("---------------\n");
 	printf("dump:\n");
 	printf("---------------\n");
