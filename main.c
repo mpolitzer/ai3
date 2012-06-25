@@ -4,12 +4,15 @@
 #include <math.h>
 #include <limits.h>
 #include <stdarg.h>
+#include <time.h>
+
+#define PRINT_INTERVAL 5
 
 #define ITERATIONS 1000000
 #define LEARNING_RATE	0.5
 
-#define NUM_IN	2
-#define NUM_MID	2
+#define NUM_IN	5
+#define NUM_MID	6
 #define NUM_OUT	1
 
 float vin[NUM_IN];
@@ -183,35 +186,62 @@ void gen_expected_xor(void)
 
 int main(int argc, const char *argv[])
 {
-	int i, n;
+	static long long iteration;
+	FILE *fin;
+	clock_t now;
+	int elapsed;
+	int interval;
 
-	if (argc > 1) sscanf(argv[1], " %d", &n);
-	else n = ITERATIONS;
+	float age, gender, number_of_tweets, result_past_time, category, result;
 
+	if (argc < 2) {
+		fprintf(stderr, "Need filename as parameter\n");
+		return 1;
+	}
+	fin = fopen(argv[1], "r");
+	
 	init();
 
+	now = clock();
+
 	do {
-		vin[0] = (n & 1) ? 1 : 0;
-		vin[1] = (n & 2) ? 1 : 0;
-		gen_expected_xor();
+		int ret = fscanf(fin, " %f %f %f %f %f %f",
+					&age, &gender, &number_of_tweets,
+					&result_past_time, &category, &result);
+		if (ret != 6) break;
+		vin[0] = age;
+		vin[1] = gender;
+		vin[2] = number_of_tweets;
+		vin[3] = result_past_time;
+		vin[4] = category;
+		expected[0] = result;
+
+		iteration++;
+		elapsed = (clock()-now)/CLOCKS_PER_SEC;
+		if (elapsed >= interval) {
+			interval += PRINT_INTERVAL;
+			printf("iteration number: %Ld\n", iteration);
+			dump_net();
+		}
 
 		update_values();
 		update_error();
 		update_weights();
-	} while (n--);
+	} while (1);
 
+#if 0
 	dump_net();
 
 	printf("---------------\n");
 	printf("dump:\n");
 	printf("---------------\n");
 
-	for (i=0; i<4; i++) {
+	for (i=0; i<10; i++) {
 		vin[0] = (i & 1) ? 1 : 0;
 		vin[1] = (i & 2) ? 1 : 0;
 		update_values();
 		dump();
 	}
-
+#endif
 	return 0;
 }
