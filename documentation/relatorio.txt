@@ -1,0 +1,21 @@
+﻿- Dados usados
+genero, idade, numero de tweets, categoria do item, tempo passado da ultima oferta de um item, resultado para comparação.
+
+- como foram gerados
+	Armazenamos os dados num banco sem preprocessamento. genero, idade, numero de tweets foram pegos diretamente do perfil do usuário. O campo categoria do item {TODO: Peter explica ai! } foi usado um numero sequêncial para caracteriza-lo. Tempo passado da ultima oferta é uma conta com as datas de quando o item foi aceito com a data atual. Resultado para comparação foi pego da tabela usuário-item com relação à aceitação. Como o numero de aceitações é muito menor do que o numero de rejeições, A tabela foi montada com respostas verdadeiro e falso intercaladas.
+
+- Implementação
+	A implementação foi feita em C. Os neurônios estão separados em camada de entrada, uma camada oculta e camada de saida.
+	A camada de entrada é um vetor 1D que recebe os dados normalizados gerados pelo banco como descrito acima. A camada oculta é uma matriz 1D com interconecções em uma matriz 2D (NxN) onde todos os neurônios se interconectam. A camada de saída é outro vetor 1D com o numero de saídas desejadas.
+	Além destas, existe a mesma quantidade de matrizes para armazenar o erro de cada neurônio para a etapa de backpropagation. 
+
+- Desempenho da rede (resolve o problema?) e velocidade de execução.
+	Com apenas uma passada do treinamento conseguimos uma taixa de acerto de aproximadamente 60%. 
+
+- Metodologia de testes
+	Os testes usam 20% da entrada de treinamento gerada pelo banco. Dele foram extraídos o total de acertos, 
+- Dificuldades encontradas
+	Definir o momento de parada do algoritmo, a mecânica exata do backpropagation e o principal dificuldade foi definir a entrada da rede.
+- Melhorias
+	Implementar o back propagation com a decisão de parada inluido como por exemplo o Levenberg–Marquardt.
+(http://crsouza.blogspot.com.br/2009/11/neural-network-learning-by-levenberg_18.html) 
