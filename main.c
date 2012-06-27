@@ -11,6 +11,8 @@
 #define ITERATIONS 1000000
 #define LEARNING_RATE	0.8
 
+#define NUMBER_OF_RUNS 3
+
 #define NUM_IN	5
 #define NUM_MID	20
 #define NUM_OUT	1
@@ -213,7 +215,8 @@ int main(int argc, const char *argv[])
 	if (fscanf(fin, " %ld", &lines_in_fin) != 1) return 1;
 
 	train_set = 0.8*lines_in_fin;
-	while (train_set > iteration) {
+	test_set = 0.2*lines_in_fin;
+	while (NUMBER_OF_RUNS*train_set > iteration) {
 		int ret = fscanf(fin, " %LE %LE %LE %LE %LE %LE",
 					&age, &gender, &number_of_tweets,
 					&result_past_time, &category, &result);
@@ -236,12 +239,17 @@ int main(int argc, const char *argv[])
 		update_values();
 		update_error();
 		update_weights();
+
+		if(iteration == train_set && (iteration / NUMBER_OF_RUNS*train_set) % NUMBER_OF_RUNS != NUMBER_OF_RUNS-1)
+		{
+			rewind(fin);
+			fscanf(fin, " %ld", &lines_in_fin);
+		}
 	}
 
 	printf("iteration number: %ld\n", iteration);
 	dump_net();
 
-	test_set = lines_in_fin - iteration;
 	iteration = 0;
 
 	while (iteration < test_set) {
@@ -252,7 +260,7 @@ int main(int argc, const char *argv[])
 		vin[0] = age;
 		vin[1] = gender;
 		vin[2] = number_of_tweets;
-		vin[2] = result_past_time;
+		vin[3] = result_past_time;
 		vin[4] = category;
 
 		iteration++;
@@ -269,6 +277,7 @@ int main(int argc, const char *argv[])
 		else wrong++;
 	}
 
+	printf("DEBUG: correct %d, wrong %d, test_set %d \n", correct, wrong, test_set);
 	printf("correct: %Lf wrong: %Lf, total: %ld\n",
 			((long double)correct)/test_set,
 			((long double)wrong)/test_set,
