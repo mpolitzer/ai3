@@ -2,7 +2,14 @@
 genero, idade, numero de tweets, categoria do item, tempo passado da ultima oferta de um item, resultado para comparação.
 
 - como foram gerados
-	Armazenamos os dados num banco sem preprocessamento. genero, idade, numero de tweets foram pegos diretamente do perfil do usuário. O campo categoria do item {TODO: Peter explica ai! } foi usado um numero sequêncial para caracteriza-lo. Tempo passado da ultima oferta é uma conta com as datas de quando o item foi aceito com a data atual. Resultado para comparação foi pego da tabela usuário-item com relação à aceitação. Como o numero de aceitações é muito menor do que o numero de rejeições, A tabela foi montada com respostas verdadeiro e falso intercaladas.
+	Armazenamos os dados num banco sem preprocessamento. genero, idade,
+	numero de tweets foram pegos diretamente do perfil do usuário. O campo
+	categoria do item {TODO: Peter explica ai! } foi usado um numero
+	sequêncial para caracteriza-lo. Tempo passado da ultima oferta é uma
+	conta com as datas de quando o item foi aceito com a data atual.
+	Resultado para comparação foi pego da tabela usuário-item com relação
+	à aceitação. Como o numero de aceitações é muito menor do que o numero
+	de rejeições, o arquivo gerado foi montado com respostas verdadeiro e falso intercaladas.
 
 - Implementação
 	A implementação foi feita em C. Os neurônios estão separados em camada de entrada, uma camada oculta e camada de saida.
@@ -10,12 +17,29 @@ genero, idade, numero de tweets, categoria do item, tempo passado da ultima ofer
 	Além destas, existe a mesma quantidade de matrizes para armazenar o erro de cada neurônio para a etapa de backpropagation. 
 
 - Desempenho da rede (resolve o problema?) e velocidade de execução.
-	Com apenas uma passada do treinamento conseguimos uma taixa de acerto de aproximadamente 60%. 
+	Com apenas uma passada do treinamento conseguimos uma taixa de acerto
+	de aproximadamente 60%, com todos os parametros informados acima.
+	Retirando algum deles a taxa cai para aproximadamente 50%. (Peter,
+	caso queira explicar melhor, sugiro que rode na sua máquina; brinca de
+	variar os parametros aí, não demora muito) 
 
 - Metodologia de testes
-	Os testes usam 20% da entrada de treinamento gerada pelo banco. Dele foram extraídos o total de acertos, 
+	Os testes usam 100% da entrada de treinamento gerada pelo banco. Dele
+	foram extraídos o total de acertos. No entanto, apenas 70% é usado
+	para o treinamento. 
+	Foi feito o teste da rede com a entradade de treinamento sendo
+	realizada várias vezes (com o mesmo conjunto de dados), no entanto
+	nenhuma melhora no resultado foi percebida.
+
+
 - Dificuldades encontradas
-	Definir o momento de parada do algoritmo, a mecânica exata do backpropagation e o principal dificuldade foi definir a entrada da rede.
+	Definir o momento de parada do algoritmo, a mecânica exata do
+	backpropagation e o principal dificuldade foi definir a entrada da
+	rede (como combinar os dados).
+
 - Melhorias
 	Implementar o back propagation com a decisão de parada inluido como por exemplo o Levenberg–Marquardt.
 (http://crsouza.blogspot.com.br/2009/11/neural-network-learning-by-levenberg_18.html) 
+	Usar as keywords para gerar um parametro que informe a relacao entre
+	usuario e item, no sentido do interesse dele. (Peter, explicar a
+	conta).
