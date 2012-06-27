@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-O2 -ansi -funroll-loops -Wall
+CFLAGS=-O2 -funroll-loops -Wall
 LDFLAGS=-O2
 LDLIBS=-lm
 SOURCES=main.c

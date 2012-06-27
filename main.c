@@ -9,9 +9,9 @@
 #define PRINT_INTERVAL 5
 
 #define ITERATIONS 1000000
-#define LEARNING_RATE	0.8
+#define LEARNING_RATE	0.2
 
-#define NUMBER_OF_RUNS 3
+#define NUMBER_OF_RUNS 6
 
 #define NUM_IN	5
 #define NUM_MID	20
@@ -215,7 +215,8 @@ int main(int argc, const char *argv[])
 	if (fscanf(fin, " %ld", &lines_in_fin) != 1) return 1;
 
 	train_set = 0.8*lines_in_fin;
-	test_set = 0.2*lines_in_fin;
+	test_set = 1.0*lines_in_fin;
+
 	while (NUMBER_OF_RUNS*train_set > iteration) {
 		int ret = fscanf(fin, " %LE %LE %LE %LE %LE %LE",
 					&age, &gender, &number_of_tweets,
@@ -232,27 +233,29 @@ int main(int argc, const char *argv[])
 		elapsed = (clock()-now)/CLOCKS_PER_SEC;
 		if (elapsed >= interval) {
 			interval += PRINT_INTERVAL;
-			printf("iteration number: %ld\n", iteration);
-			dump_net();
+//			printf("iteration number: %ld\n", iteration);
+//			dump_net();
 		}
 
 		update_values();
 		update_error();
 		update_weights();
 
-		if(iteration == train_set && (iteration / NUMBER_OF_RUNS*train_set) % NUMBER_OF_RUNS != NUMBER_OF_RUNS-1)
+		if(iteration%train_set == 0)
 		{
+		printf("DEBUG PORCO MERMO!\n");
+
 			rewind(fin);
 			fscanf(fin, " %ld", &lines_in_fin);
 		}
 	}
 
-	printf("iteration number: %ld\n", iteration);
-	dump_net();
+//	printf("iteration number: %ld\n", iteration);
+//	dump_net();
 
 	iteration = 0;
 
-	while (iteration < test_set) {
+	while (1) {
 		int ret = fscanf(fin, " %LE %LE %LE %LE %LE %LE",
 					&age, &gender, &number_of_tweets,
 					&result_past_time, &category, &result);
@@ -277,7 +280,7 @@ int main(int argc, const char *argv[])
 		else wrong++;
 	}
 
-	printf("DEBUG: correct %d, wrong %d, test_set %d \n", correct, wrong, test_set);
+	printf("DEBUG: correct %ld, wrong %ld, test_set %ld \n", correct, wrong, test_set);
 	printf("correct: %Lf wrong: %Lf, total: %ld\n",
 			((long double)correct)/test_set,
 			((long double)wrong)/test_set,
